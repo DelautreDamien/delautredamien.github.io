@@ -18,7 +18,7 @@ void main(void) {
 	if(col[0] < threshold) {
 		col[3]=texture2D(uSampler, vec2(tCoords.s, tCoords.t)).r*alpha;
 	}else{
-		col[3]=0.0;
+		discard;
 	}
 	
 	gl_FragColor = col;

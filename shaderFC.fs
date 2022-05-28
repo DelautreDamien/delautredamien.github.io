@@ -24,7 +24,7 @@ uniform vec4 fCol7;
 float gradient ( float x, float YB, float YA, float XB, float XA, float fCAlpha){
 	float res;
 	if(fCAlpha==0.0) {
-		res = 0.0;
+		discard;
 	}else{
 		res = (YB-YA);
 		float inter = (XB-XA);
@@ -41,7 +41,7 @@ void main(void) {
 	vec4 col;
 	col[0]=texture2D(uSampler, vec2(tCoords.s, tCoords.t)).r;
 	if(threshold>col[0]) {
-		col= vec4(0.0);
+		discard;
 	}else{
 		col[3]=col[0];
 
@@ -82,7 +82,7 @@ void main(void) {
 			col[3]= col[3]*alphaFCol6;
 		}
 		else{
-			col = vec4(0.0) ;
+			discard;
 		}
 	}
 	
