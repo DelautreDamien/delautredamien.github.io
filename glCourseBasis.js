@@ -101,8 +101,6 @@ function webGLStart() {
         seriesTab[Tango].quads.set(pathTab[index - 1]);
     }
 
-    /* console.log(seriesTab); */
-
     initTexture(0);
     end = texTab.length;
     stackSize = texTab.length - 1;
@@ -345,33 +343,31 @@ function drawScene() {
 
     gl.clear(gl.COLOR_BUFFER_BIT);
     if (soloFrame) {
-        if (shaderProgram != null) {
-            setParam();
-            gl.bindTexture(gl.TEXTURE_2D, texTab[quadTab[single].tex]);
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-            mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
-            mat4.identity(mvMatrix);
-            mat4.translate(mvMatrix, [0.0, 0.0, -2.0]);
-            mat4.multiply(mvMatrix, objMatrix);
-            mat4.translate(mvMatrix, [0.0, 0.0, 0.0]);
-            setMatrixUniforms();
-            gl.drawElements(gl.TRIANGLES, indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
-        }
+        drawFrame(quadTab[single]);
     } else {
         for (let index = start; index < end; index++) {
-            if (shaderProgram != null) {
-                setParam();
-                gl.bindTexture(gl.TEXTURE_2D, texTab[quadTab[index].tex]);
-                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-                mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
-                mat4.identity(mvMatrix);
-                mat4.translate(mvMatrix, [0.0, 0.0, -2.0]);
-                mat4.multiply(mvMatrix, objMatrix);
-                mat4.translate(mvMatrix, [0.0, 0.0, quadTab[index].zPos]);
-                setMatrixUniforms();
-                gl.drawElements(gl.TRIANGLES, indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
-            }
+            drawFrame(quadTab[index]);
         }
     }
 
+}
+
+// =====================================================
+function drawFrame(frame) {
+    if (shaderProgram != null) {
+        setParam();
+        gl.bindTexture(gl.TEXTURE_2D, texTab[frame.tex]);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+        mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
+        mat4.identity(mvMatrix);
+        mat4.translate(mvMatrix, [0.0, 0.0, -2.0]);
+        mat4.multiply(mvMatrix, objMatrix);
+        if (soloFrame) {
+            mat4.translate(mvMatrix, [0.0, 0.0, 0.0]);
+        } else {
+            mat4.translate(mvMatrix, [0.0, 0.0, frame.zPos]);
+        }
+        setMatrixUniforms();
+        gl.drawElements(gl.TRIANGLES, indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+    }
 }

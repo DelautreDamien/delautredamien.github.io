@@ -85,7 +85,10 @@ void main(void) {
 			discard;
 		}
 	}
-	
+
+	if(col[0]==0.0 && col[1]==0.0 && col[2]==0.0) {
+		discard;
+	}
 	gl_FragColor = col;	
 }
 
