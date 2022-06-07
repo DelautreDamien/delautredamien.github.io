@@ -1,335 +1,176 @@
 <html>
 
 <head>
-	<meta charset="UTF-8">
-	<title>WebGL - Canvas test</title>
-	<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+    <meta charset="UTF-8">
+    <title>WebGL - Canvas test</title>
+    <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
 
-<!------------------------------------------------------------------->
-	<script type="text/javascript" src="glMatrix.js"></script>
-	<script type="text/javascript" src="callbacks.js"></script>
-	<script type="text/javascript" src="glCourseBasis.js"></script>
-	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-	<script src="IHM.js"></script>
-	<!------------------------------------------------------------------->
+    <link rel="stylesheet" media="screen" href="style1.css">
 
-	<style type="text/CSS">
-		#contenu1 {
-			margin-left:0px;
-			float:left;
-		}
-
-		#contenu2, #contenu3 {
-			margin-left:20px;
-			float:left;
-			width:600px;
-			height:600px;
-			text-align:center;
-		}
-
-		.ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default,  html .ui-button.ui-state-disabled:hover, html .ui-button.ui-state-disabled:active {
-			border: 1px solid #c5c5c5;
-			background: #f6f6f6;
-			font-weight: normal;
-			color: #454545;
-		}
-
-		.ui-slider .ui-slider-handle {
-			position: absolute;
-			z-index: 2;
-			width: 1.6em;
-			height: 1.2em;
-			cursor: default;
-			-ms-touch-action: none;
-			touch-action: none;
-			top: -.3em;
-			margin-left: -.6em;
-		}
-
-		/* The switch - the box around the slider */
-		*.switch {
-			position: relative;
-			display: inline-block;
-			width: 60px;
-			height: 34px;
-		}
-
-		/* The slider */
-		.slider {
-			position: absolute;
-			cursor: pointer;
-			top: 0;
-			left: 0;
-			right: 0;
-			bottom: 0;
-			background-color: #ccc;
-			-webkit-transition: .4s;
-			transition: .4s;
-		}
-
-		.slider:before {
-			position: absolute;
-			content: "";
-			height: 26px;
-			width: 26px;
-			left: 4px;
-			bottom: 4px;
-			background-color: white;
-			-webkit-transition: .4s;
-			transition: .4s;
-		}
-
-		/* -------------------------------------------------------- */
-
-		input:checked + .slider {
-			background-color: #2196F3;
-		}
-
-		input:focus + .slider {
-			box-shadow: 0 0 1px #2196F3;
-		}
-
-		input:checked + .slider:before {
-			-webkit-transform: translateX(26px);
-			-ms-transform: translateX(26px);
-			transform: translateX(26px);
-		}
-
-		/* Rounded sliders */
-		.slider {
-			position: absolute;
-			cursor: pointer;
-			top: 0;
-			left: 0;
-			right: 0;
-			bottom: 0;
-			background-color: #ccc;
-			-webkit-transition: .4s;
-			transition: .4s;
-		}
-
-		.slider:before {
-			position: absolute;
-			content: "";
-			height: 26px;
-			width: 26px;
-			left: 4px;
-			bottom: 4px;
-			background-color: white;
-			-webkit-transition: .4s;
-			transition: .4s;
-		}
-
-		.slider.round {
-			border-radius: 34px;
-		}
-
-		.slider.round:before {
-			border-radius: 50%;
-		}
-
-		.mb-3 {
-			margin-bottom: 1rem !important;
-		}
-
-		.border-primary {
-			border-color: #007bff !important;
-		}
-
-		.card {
-			flex-direction: column;
-			background-color: #fff;
-			background-clip: border-box;
-			border: 1px solid rgba(0, 0, 0, 0.125);
-			border-radius: 1rem;
-		}
-
-		.card-header:first-child {
-			border-radius: calc(0.25rem - 1px) calc(0.25rem - 1px) 0 0;
-		}
-
-		.card-header {
-			padding: 0.75rem 1.25rem;
-			margin-bottom: 0;
-			background-color: rgba(0, 0, 0, 0.03);
-			border-bottom: 1px solid rgba(0, 0, 0, 0.125);
-		}
-
-		.card-body {
-			-ms-flex: 1 1 auto;
-			flex: 1 1 auto;
-			min-height: 1px;
-			padding: 1rem;
-		}
-
-		.field {
-			border-radius: 0.25rem;
-			border: 1px solid rgba(0, 0, 0, 0.125);
-			padding: 0.75rem 1.25rem;
-		}
-
-		*, ::before, ::after {
-			box-sizing: border-box;
-		}
-	</style>
+    <!------------------------------------------------------------------->
+    <script type="text/javascript" src="glMatrix.js"></script>
+    <script type="text/javascript" src="callbacks.js"></script>
+    <script type="text/javascript" src="glCourseBasis.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="IHM.js"></script>
+    <!------------------------------------------------------------------->
 
 </head>
 
 
 <body onload="webGLStart();">
-	<div id=contenu1>
-		<canvas id="WebGL-test" style="border:none;" width="500" height="600"></canvas>
-		<br><br>
-		<button type="button" onclick="loadAShaders()">Load Shaders</button>
-	</div>
+    <div id=contenu1>
+        <canvas id="WebGL-test" style="border:none;" width="500" height="600"></canvas>
+        <br><br>
+        <button type="button" onclick="loadAShaders()">Load Shaders</button>
+    </div>
 
-	<div id=contenu2 class="card border-primary mb-3" style="max-width: 24rem;">
-		<div class="card-header">Modifier les couleurs</div>
+    <div id=contenu2 class="card border-primary mb-3" style="max-width: 24rem;">
+        <div class="card-header">Modifier les couleurs</div>
 
-		<div class="card-body">
-			<fieldset class="border-primary field">
-				<legend>Enlever les fausses couleurs</legend>
-				<label class="switch">
+        <div class="card-body">
+            <fieldset class="border-primary field">
+                <legend>Enlever les fausses couleurs</legend>
+                <label class="switch">
 					<input type="checkbox" id ="myCheckbox" onclick="onoffFC()">
 					<span class="slider round"></span>
 				</label>
-			</fieldset>
+            </fieldset>
 
-			<!-- ------------------------------------------------ -->
+            <!-- ------------------------------------------------ -->
 
-			<fieldset class="border-primary field" id="valSeuil">
-				<legend>Faire varier le seuil de densité minimale</legend>
-				<input id="sliderSeuil" type="range" value="0.4" min="0" max="1" step="0.01" oninput="valSeuildensité(this)">
-				<output>0.4</output>
-			</fieldset>
+            <fieldset class="border-primary field" id="valSeuil">
+                <legend>Faire varier le seuil de densité minimale</legend>
+                <input id="sliderSeuil" type="range" value="0.4" min="0" max="1" step="0.01" oninput="valSeuildensité(this)">
+                <output>0.4</output>
+            </fieldset>
 
-			<!-- ------------------------------------------------ -->
+            <!-- ------------------------------------------------ -->
 
-			<fieldset class="border-primary field" id="color">
-				<legend>Modifier la couleur</legend>
+            <fieldset class="border-primary field" id="color">
+                <legend>Modifier la couleur</legend>
 
-				<table>
-					<tr>
-						<td>
-							Densité de couleur de 0.9 à 1.0
-						</td>
-						<td>
-							<input type="color" id="color09" value="#ff0000" oninput="changeColor(this, 1)">
-						</td>
-						<td>
-							<input type="checkbox" id="myCheckboxColor1" onclick="onoffColorTransparency(this, 0)">
-						</td>
-					</tr>
-					<tr>
-						<td>
-							Densité de couleur de 0.8 à 0.9
-						</td>
-						<td>
-							<input type="color" id="color08" value="#0000ff" oninput="changeColor(this, 2)">
-						</td>
-						<td>
-							<input type="checkbox" id="myCheckboxColor2" onclick="onoffColorTransparency(this, 1)">
-						</td>
-					</tr>
-					<tr>
-						<td>
-							Densité de couleur de 0.7 à 0.8
-						</td>
-						<td>
-							<input type="color" id="color07" value="#00ff00" oninput="changeColor(this, 3)">
-						</td>
-						<td>
-							<input type="checkbox" id="myCheckboxColor3" onclick="onoffColorTransparency(this, 2)">
-						</td>
-					</tr>
-					<tr>
-						<td>
-							Densité de couleur de 0.6 à 0.7
-						</td>
-						<td>
-							<input type="color" id="color06" value="#00ffff" oninput="changeColor(this, 4)">
-						</td>
-						<td>
-							<input type="checkbox" id="myCheckboxColor4" onclick="onoffColorTransparency(this, 3)">
-						</td>
-					</tr>
-					<tr>
-						<td>
-							Densité de couleur de 0.5 à 0.6
-						</td>
-						<td>
-							<input type="color" id="color05" value="#ff00ff" oninput="changeColor(this, 5)">
-						</td>
-						<td>
-							<input type="checkbox" id="myCheckboxColor5" onclick="onoffColorTransparency(this, 4)">
-						</td>
-					</tr>
-					<tr>
-						<td>
-							Densité de couleur de 0.4 à 0.5
-						</td>
-						<td>
-							<input type="color" id="color04" value="#ffff00" oninput="changeColor(this, 6)">
-						</td>
-						<td>
-							<input type="checkbox" id="myCheckboxColor6" onclick="onoffColorTransparency(this, 5)">
-						</td>
-					</tr>
-				</table>
-			</fieldset>
+                <table>
+                    <tr>
+                        <td>
+                            Densité de couleur de 0.9 à 1.0
+                        </td>
+                        <td>
+                            <input type="color" id="color09" value="#ff0000" oninput="changeColor(this, 1)">
+                        </td>
+                        <td>
+                            <input type="checkbox" id="myCheckboxColor1" onclick="onoffColorTransparency(this, 0)">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Densité de couleur de 0.8 à 0.9
+                        </td>
+                        <td>
+                            <input type="color" id="color08" value="#0000ff" oninput="changeColor(this, 2)">
+                        </td>
+                        <td>
+                            <input type="checkbox" id="myCheckboxColor2" onclick="onoffColorTransparency(this, 1)">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Densité de couleur de 0.7 à 0.8
+                        </td>
+                        <td>
+                            <input type="color" id="color07" value="#00ff00" oninput="changeColor(this, 3)">
+                        </td>
+                        <td>
+                            <input type="checkbox" id="myCheckboxColor3" onclick="onoffColorTransparency(this, 2)">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Densité de couleur de 0.6 à 0.7
+                        </td>
+                        <td>
+                            <input type="color" id="color06" value="#00ffff" oninput="changeColor(this, 4)">
+                        </td>
+                        <td>
+                            <input type="checkbox" id="myCheckboxColor4" onclick="onoffColorTransparency(this, 3)">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Densité de couleur de 0.5 à 0.6
+                        </td>
+                        <td>
+                            <input type="color" id="color05" value="#ff00ff" oninput="changeColor(this, 5)">
+                        </td>
+                        <td>
+                            <input type="checkbox" id="myCheckboxColor5" onclick="onoffColorTransparency(this, 4)">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Densité de couleur de 0.4 à 0.5
+                        </td>
+                        <td>
+                            <input type="color" id="color04" value="#ffff00" oninput="changeColor(this, 6)">
+                        </td>
+                        <td>
+                            <input type="checkbox" id="myCheckboxColor6" onclick="onoffColorTransparency(this, 5)">
+                        </td>
+                    </tr>
+                </table>
+            </fieldset>
 
-			<!-- ------------------------------------------------ -->
+            <!-- ------------------------------------------------ -->
 
-			<fieldset class="border-primary field" id="transparency" style="display: none;">
-				<legend>Faire varier la transparence</legend>
-				<input id="sliderTrans" type="range" value="1" min="0" max="1" step="0.01" oninput="transparence(this)">
-				<output>1</output>
-			</fieldset>
-		</div>
-	</div>
+            <fieldset class="border-primary field" id="transparency" style="display: none;">
+                <legend>Faire varier la transparence</legend>
+                <input id="sliderTrans" type="range" value="1" min="0" max="1" step="0.01" oninput="transparence(this)">
+                <output>1</output>
+            </fieldset>
+        </div>
+    </div>
 
-	<!-- ======================================= -->
+    <!-- ======================================= -->
 
-	<div id=contenu3 class="card border-primary mb-3" style="max-width: 20rem;">
-		<div class="card-header">Modifier les frames</div>
+    <div id=contenu3 class="card border-primary mb-3" style="max-width: 20rem;">
+        <div class="card-header">Modifier les frames</div>
 
-		<div class="card-body">
+        <div class="card-body">
 
-			<fieldset class="border-primary field">
-				<legend>Afficher une seule frame</legend>
-				<label class="switch">
+            <fieldset class="border-primary field">
+                <legend>Afficher une seule frame</legend>
+                <label class="switch">
 					<input type="checkbox" id ="myCheckbox2" onclick="onoffFrame()">
 					<span class="slider round"></span>
 				</label>
-			</fieldset>
+            </fieldset>
 
-			<fieldset class="border-primary field" id="sliderSoloFrame" style="display: none">
-				<legend>Choisir la frame à afficher</legend>
-				<input type="range" value="1" min="1" max="360" oninput="singleFrame(this)">
-				<output>1</output>
-			</fieldset>
+            <fieldset class="border-primary field" id="sliderSoloFrame" style="display: none">
+                <legend>Choisir la frame à afficher</legend>
+                <input type="range" value="1" min="1" max="360" oninput="singleFrame(this)">
+                <output>1</output>
+            </fieldset>
 
-			<!-- ------------------------------------------------ -->
+            <!-- ------------------------------------------------ -->
 
-			<fieldset class="border-primary field" id="nbrFrame">
-				<legend>Faire varier le nombre de frames</legend>
-				Frame Minimum
-				<div id="sliderFrameMin">
-					<input type="range" min="1" max="360" value="1" oninput="frameMinimum(this)">
-					<output>1</output>
-				</div>
-				<br>
-				Frame Maximum
-				<div id="sliderFrameMax">
-					<input type="range" min="1" max="360" value="360" oninput="frameMaximum(this)">
-					<output>360</output>
-				</div>
-			</fieldset>
+            <fieldset class="border-primary field" id="nbrFrame">
+                <legend>Faire varier le nombre de frames</legend>
+                Frame Minimum
+                <div id="sliderFrameMin">
+                    <input type="range" min="1" max="360" value="1" oninput="frameMinimum(this)">
+                    <output>1</output>
+                </div>
+                <br> Frame Maximum
+                <div id="sliderFrameMax">
+                    <input type="range" min="1" max="360" value="360" oninput="frameMaximum(this)">
+                    <output>360</output>
+                </div>
+            </fieldset>
 
-		</div>
+        </div>
 
-	</div>
+    </div>
 </body>
 
 
