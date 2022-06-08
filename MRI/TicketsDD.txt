@@ -1,0 +1,15 @@
+> faire fausse couleur
+    > interpolation linéaire !!
+> faire varier la transparence avec alpha
+
+PB1- bruit de fond
+PB2- trie des quad en profondeur
+PB3- IHM
+    > choisir quelle série s'affiche
+    > faire un select pour le quad
+    > ajouter de la couleur au quad selectionné
+    > modifier la position du quad selectionné
+PB4- on fait quoi ?
+
+Marching cube : https://github.com/JosephSullivan256/WebGL-Marching-Cubes
+
