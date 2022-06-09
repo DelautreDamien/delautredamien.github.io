@@ -27,7 +27,6 @@ class IHMColorChanger {
 
 	// --------------------------------------------
 	ressetColors(hex) {
-		
 		var res = this.hexToRgb(hex);
 		this.owner.setR(res.r/255);
 		this.owner.setG(res.g/255);
@@ -36,7 +35,6 @@ class IHMColorChanger {
 
 	// --------------------------------------------
 	hexToRgb(hex) {
-		
 		var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
 		return result ? {
 		r: parseInt(result[1], 16),
@@ -82,8 +80,20 @@ class IHMSlider {
 			case "Y":
 				this.owner.setPosY(this.slider.value/100);
 				break;				
+			case "Ks":
+				this.owner.setKs(this.slider.value/100);
+				break;	
+			case "rotX":
+				this.owner.setRotX(this.slider.value/100);
+				console.log("Alpha");
+				break;	
+			case "rotY":
+				this.owner.setRotY(this.slider.value/100);
+				console.log("Bravo");
+				break;	
 			default : 
 				this.owner.setalpha(this.slider.value/100);
+				console.log("Charlie");
 				break;
 		}
 	}
@@ -111,7 +121,8 @@ class objmesh {
 		this.faceDisplay = true;
 		this.wireDisplay = false;
 		this.mesh = null;
-		this.pos= pos;
+		this.pos = pos;
+		this.rot = [0.0, 0.0, 0.0]
 		this.alpha = 0.8;
 		this.ks= 0.5;
 		this.n = 100.0;
@@ -119,6 +130,10 @@ class objmesh {
 		this.g = 1.0;
 		this.b = 1.0;
 		this.num = indice;
+		this.ObjFinalMat=mat4.create();
+		mat4.identity(this.ObjFinalMat);
+		mat4.translate(this.ObjFinalMat,this.pos);
+		
 		this.colorChanger = new IHMColorChanger(this,"colorObj"+String(this.num));
 		this.sliders=[];
 
@@ -152,12 +167,36 @@ class objmesh {
 
 	// --------------------------------------------
 	setPosX(newVal){
+		mat4.translate(this.ObjFinalMat,[newVal-this.pos[0],0,0]);
 		this.pos[0]=newVal;
 	}
 
 	// --------------------------------------------
 	setPosY(newVal){
+		mat4.translate(this.ObjFinalMat,[newVal-this.pos[1],0,0]);
 		this.pos[1]=newVal;
+	}
+
+	// --------------------------------------------
+	setRotX(newVal){
+		console.log("Alpha "+this.rot[0]+" "+this.rot[1])
+		mat4.rotate(this.ObjFinalMat, newVal-this.rot[0], [1, 0, 0]);
+		this.rot[0]=newVal;
+		console.log("Bravo "+this.rot[0]+" "+this.rot[1])
+
+	   }
+
+	// --------------------------------------------
+	setRotY(newVal){
+		console.log("Charlie "+this.rot[0]+" "+this.rot[1])
+		mat4.rotate(this.ObjFinalMat, newVal-this.rot[1], [0, 0, 1]);
+		this.rot[1]=newVal;
+		console.log("Delta "+this.rot[0]+" "+this.rot[1])
+	   }
+
+	// --------------------------------------------
+	setKs(newVal){
+		this.ks=newVal;
 	}
 
 	// --------------------------------------------
@@ -206,7 +245,7 @@ class objmesh {
 		gl.uniformMatrix4fv(this.shader1.pMatrixUniform, false, pMatrix);
 
 		gl.uniform1f(this.shader1.uAlpha, this.alpha);
-		gl.uniform3fv(this.shader1.pos, this.pos);
+		gl.uniformMatrix4fv(this.shader1.posMat, false, this.ObjFinalMat);
 		gl.uniform1f(this.shader1.ks, this.ks);
 		gl.uniform1f(this.shader1.n, this.n);
 		gl.uniform1f(this.shader1.r, this.r);
@@ -214,7 +253,7 @@ class objmesh {
 		gl.uniform1f(this.shader1.b, this.b);
 
 		this.shader1.uAlpha = gl.getUniformLocation(this.shader1.shader, "uAlpha");
-		this.shader1.pos = gl.getUniformLocation(this.shader1.shader, "uObjPos");
+		this.shader1.posMat = gl.getUniformLocation(this.shader1.shader, "uPosMatrix");
 		this.shader1.ks = gl.getUniformLocation(this.shader1.shader, "Ks");
 		this.shader1.n = gl.getUniformLocation(this.shader1.shader, "n");
 		this.shader1.r = gl.getUniformLocation(this.shader1.shader, "r");
@@ -241,8 +280,8 @@ class objmesh {
 		gl.uniformMatrix4fv(this.shader2.mvMatrixUniform, false, mvMatrix);
 		gl.uniformMatrix4fv(this.shader2.pMatrixUniform, false, pMatrix);
 		
-		this.shader2.pos = gl.getUniformLocation(this.shader2.shader, "uObjPos");
-		gl.uniform3fv(this.shader2.pos, this.pos);
+		this.shader2.posMat = gl.getUniformLocation(this.shader2.shader, "uPosMatrix");
+		gl.uniformMatrix4fv(this.shader2.posMat, false, this.ObjFinalMat);
 	}
 	
 	// --------------------------------------------
@@ -358,7 +397,6 @@ class plane {
 // =====================================================
 
 
-
 // =====================================================
 function initGL(canvas)
 {
@@ -369,8 +407,7 @@ function initGL(canvas)
 		gl.viewport(0, 0, canvas.width, canvas.height);
 
 		gl.clearColor(0.7, 0.7, 0.7, 1.0);
-		gl.clearDepth(1.0);
-
+		
 		gl.enable(gl.DEPTH_TEST);
 
 		gl.enable(gl.CULL_FACE);
@@ -388,11 +425,6 @@ function initGL(canvas)
 		gl.fogf(gl.FOG_START, 1.0);
 		gl.fogf(gl.FOG_END, 5.0);
 		gl.clearColor(fogcolor);
-
-		gl.depthMask(gl.TRUE);
-		gl.depthFunc(gl.LEQUAL);
-		
-		gl.depthRange(0.0, 1.0);
 		 
 	} catch (e) {}
 	if (!gl) {
@@ -401,7 +433,7 @@ function initGL(canvas)
 }
 
 
-// =====================================================
+/// =====================================================
 loadObjFile = function(OBJ3D)
 {
 	var xhttp = new XMLHttpRequest();
@@ -574,55 +606,90 @@ function webGLStart() {
 
 	tick();
 }
-
+// =====================================================
+function delObj(objNum){
+	OBJS[objNum]=null;
+	toDel=document.getElementById("IHM_Obj_"+String(objNum));
+	toDel.remove();
+}
 // =====================================================
 function addObj(name, pos) {
 
 	if (pos === undefined) {
 		pos = [0.0, 0.0, 0.0];
 	}
-
+	
 	//Creation de l'objet
 	if (name === undefined){
-		OBJS.push(new objmesh(document.getElementById("fileName").value ,pos, OBJS.length));
+		newObj = new objmesh(document.getElementById("fileName").value ,pos, OBJS.length);
 	}
 	else{
-		OBJS.push(new objmesh(name, pos, OBJS.length));
+		newObj = new objmesh(name, pos, OBJS.length);
 	}
-	newObj = OBJS[OBJS.length-1];
+	if (0==OBJS.length) {
+		OBJS.push(newObj);
+	}else{
+		done=false;
+		for (let index = 0; index < OBJS.length; index++) {
+			if (OBJS[index] == null) {
+				OBJS[index]=newObj;
+				OBJS[index].num=index;
+				done=true;
+			}
+		}
+		if(done==false){
+			OBJS.push(newObj);
+		}
+	}
 
 	//creation de l'interface
 	objInterface = document.createElement("div");
 	objInterface.className = "IHM";
+	objInterface.setAttribute("id", "IHM_Obj_"+newObj.num);
 
 	//titre de l'interface
 	objInterface.appendChild(newIhmTitle());
 
-	//Section 1 Titre
-	objInterface.appendChild(newTitle("Transparence"));
+	objInterface.appendChild(newTitle("Shader settings", "sliderContainer"+newObj.num+"1"));
 
 	// Section 1 Slider container
 	section1Sliders = document.createElement("div");
 	section1Sliders.className = "slidecontainer";
+	section1Sliders.setAttribute("id", "sliderContainer"+newObj.num+"1");
+	section1Sliders.setAttribute("onmouseleave", "DisplayOrNot(\"sliderContainer"+newObj.num+"1\")");
 
 	// Section 1 Slider 1 input
-	section1Sliders.appendChild(addSlider(newObj, "rangeObj"+newObj.num+"Alpha", "obj"+newObj.num+"Alpha", "Alpha", 0, 100, newObj.alpha));
+	section1Slider1Title = newName("Alpha :");
+	section1Slider1Title.appendChild(addSlider(newObj, "rangeObj"+newObj.num+"Alpha", "obj"+newObj.num+"Alpha", "Alpha", 0, 100, newObj.alpha));
+	section1Sliders.appendChild(section1Slider1Title);
 
 	// Section 1 Slider 1 output
 	section1Sliders.appendChild(addOutput("obj"+newObj.num+"Alpha"));
 	
+	// Section 1 Slider 2 input
+	section1Slider2Title = newName("Ks :");
+	section1Slider2Title.appendChild(addSlider(newObj, "rangeObj"+newObj.num+"Ks", "obj"+newObj.num+"Ks", "Ks", 0, 100, newObj.ks));
+	section1Sliders.appendChild(section1Slider2Title);
+
+	// Section 1 Slider 2 output
+	section1Sliders.appendChild(addOutput("obj"+newObj.num+"Ks"));
+
 	//ajout de la section 1 à l'interface
+	//Section 1 Titre
+	
 	objInterface.appendChild(section1Sliders);
 	
 	//Section 2 Titre
-	objInterface.appendChild(newTitle("Coordonnee"));
+	objInterface.appendChild(newTitle("Coordonnee", "sliderContainer"+newObj.num+"2"));
 
 	// Section 2 Slider container
 	section2Sliders = document.createElement("div");
 	section2Sliders.className = "slidecontainer";
+	section2Sliders.setAttribute("id", "sliderContainer"+newObj.num+"2")
+	section2Sliders.setAttribute("onmouseleave", "DisplayOrNot(\"sliderContainer"+newObj.num+"2\")");
 
 	// Section 2 Slider 1 input
-	section2Slider1Title = newTitle("X :");
+	section2Slider1Title = newName("X :");
 	section2Slider1Title.appendChild(addSlider(newObj, "rangeObj"+newObj.num+"X", "obj"+newObj.num+"X", "X", -100, 100, newObj.pos[0]));
 	section2Sliders.appendChild(section2Slider1Title);
 
@@ -630,35 +697,57 @@ function addObj(name, pos) {
 	section2Sliders.appendChild(addOutput("obj"+newObj.num+"X"));
 
 	// Section 2 Slider 2 input
-	section2Slider2Title = newTitle("Y: ");
+	section2Slider2Title = newName("Y: ");
 	section2Slider2Title.appendChild(addSlider(newObj, "rangeObj"+newObj.num+"Y", "obj"+newObj.num+"Y", "Y", -100, 100, newObj.pos[1]));
 	section2Sliders.appendChild(section2Slider2Title);
 
 	// Section 2 Slider 2 output
 	section2Sliders.appendChild(addOutput("obj"+newObj.num+"Y"));
 
+	// Section 2 Slider 3 input
+	section2Slider2Title = newName("rotation on X: ");
+	section2Slider2Title.appendChild(addSlider(newObj, "rangeObj"+newObj.num+"rotX", "obj"+newObj.num+"rotX", "rotX", -315, 315, newObj.rot[0]));
+	section2Sliders.appendChild(section2Slider2Title);
+
+	// Section 2 Slider 3 output
+	section2Sliders.appendChild(addOutput("obj"+newObj.num+"rotX"));
+
+	// Section 2 Slider 3 input
+	section2Slider2Title = newName("rotation on Y: ");
+	section2Slider2Title.appendChild(addSlider(newObj, "rangeObj"+newObj.num+"rotY", "obj"+newObj.num+"rotY", "rotY", -315, 315, newObj.rot[1]));
+	section2Sliders.appendChild(section2Slider2Title);
+
+	// Section 2 Slider 3 output
+	section2Sliders.appendChild(addOutput("obj"+newObj.num+"rotY"));
+
 	objInterface.appendChild(section2Sliders);
 	
 	// Section 3 Titre
-	objInterface.appendChild(newTitle("Reflectance"));
+	objInterface.appendChild(newTitle("Reflectance", "section"+newObj.num+"3"));
 
 	// Section 3 the container
 	section3 = document.createElement("div");
+	section3.className = "slidecontainer";
+	section3.setAttribute("id", "section"+newObj.num+"3");
+	section3.setAttribute("onmouseleave", "DisplayOrNot(\"section"+newObj.num+"3\")");
 
 	// Section 3 colorChanger
+
+	colInpContainer = newName("")
 	colorInput = document.createElement("input");
 	colorInput.setAttribute("type", "color");
 	colorInput.setAttribute("id", "colorObj"+newObj.num);
 	colorInput.setAttribute("oninput", "OBJS["+newObj.num+"].colorChanger.ressetColors(this.value)");
+	colorInput.setAttribute("value", "#ffffff");
 	
-	section3.appendChild(colorInput);
+	colInpContainer.appendChild(colorInput);
+	section3.appendChild(colInpContainer);
 
 	objInterface.appendChild(section3);
 
 	// Section 4 checkboxs
 	boxDiv = document.createElement("div");
-	boxDiv.appendChild(document.createElement("br"));
-	boxContainer1 = newTitle("Faces: ")
+	boxContainer1 = newName("Faces: ")
 	box1 = document.createElement("input");
 	box1.setAttribute("type", "checkbox" );
 	box1.setAttribute("checked", true);
@@ -667,16 +756,29 @@ function addObj(name, pos) {
 	boxContainer1.appendChild(box1);
 	boxDiv.appendChild(boxContainer1);
 
-	boxContainer2 = newTitle("Fil de fer: ")
+	boxContainer2 = newName("Fil de fer: ")
 	box2 = document.createElement("input");
 	box2.setAttribute("type", "checkbox" );
-	box2.setAttribute("onclick", "OBJS["+newObj.num+"].setFaceDisplay()");
+	box2.setAttribute("onclick", "OBJS["+newObj.num+"].setWireDisplay()");
 
 	boxContainer2.appendChild(box2);
 	boxDiv.appendChild(boxContainer2);
 
 	objInterface.appendChild(boxDiv);
 
+	//Delete obj button 
+
+	lstButtonContainer = newName("");
+	lastButton=document.createElement("input");
+	lastButton.setAttribute("type", "submit");
+	lastButton.setAttribute("name", "deleteOBJ"+String(newObj.num));
+	lastButton.setAttribute("value", "delete the object");
+	lastButton.setAttribute("onclick", "delObj("+newObj.num+")");
+
+	lstButtonContainer.appendChild(lastButton);
+	objInterface.appendChild(lstButtonContainer);
+
+	//Display the IHM
 
 	insertLocation=document.getElementById("interface");
 	insertLocation.appendChild(objInterface);
@@ -684,13 +786,6 @@ function addObj(name, pos) {
 	for(i=0; i<newObj.sliders.length; i++){
 		newObj.sliders[i].reset();
 	}
-	
-// 	<div>
-// 		</br>
-// 		<p>Faces: <input type="checkbox" checked onclick=OBJS[1].setFaceDisplay()></p>
-//      <p>Fil de fer: <input type="checkbox" onclick=OBJS[1].setWireDisplay()></p>
-// 	</div>
-// </div>'
 }
 
 // =====================================================
@@ -721,28 +816,52 @@ function addOutput( varIdd){
 
 // =====================================================
 function newIhmTitle() {
-	interFaceTitle = document.createElement("p");
+	interFaceTitle = document.createElement("h1");
 	objFrontName = document.createTextNode("objet "+String(OBJS.length));
 	interFaceTitle.appendChild(objFrontName);
-	
 	return interFaceTitle;
 }
 
 // =====================================================
-function newTitle(titre) {
+function newTitle(titre, childID) {
 title = document.createElement("p");
 sectionName = document.createTextNode(titre);
+title.setAttribute("onmouseover", "DisplayOrNot(\""+childID+"\")");
 title.appendChild(sectionName);
 return title
 }
 
 // =====================================================
-function drawScene() {
+function newName(Name) {
+	title = document.createElement("p");
+	sectionName = document.createTextNode(Name);
+	title.appendChild(sectionName);
+	return title
+	}
 
-	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+// =====================================================
+function drawScene() {
+	gl.clear(gl.COLOR_BUFFER_BIT);
 	PLANE.draw();
 	for( i=0; i<OBJS.length; i++){
-		OBJS[i].draw();
+		if (OBJS[i]!=null) {
+			OBJS[i].draw();
+		}
 	}
 }
+
+// =====================================================
+function DisplayOrNot(name){
+	if(document.getElementById(name).style.display == "block"){
+		document.getElementById(name).style.display = "none";
+	}
+	else{
+		document.getElementById(name).style.display = "block";
+	}
+}
+
+// --------------------------------------------
+function newFunction(paramIn){
+	//insert statment;
+   }
 
